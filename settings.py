@@ -1,0 +1,1 @@
+API_URL = "https://api.bybit.com/v2/public/"
