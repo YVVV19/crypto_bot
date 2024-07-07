@@ -14,6 +14,6 @@ def answer_keyboard_markup(
 
     for index, film_data in enumerate(answer_list):
         callback_data = Answer(id=index, **film_data)
-        builder.button(text=f"{callback_data.name}", callback_data=callback_data.pack())
+        builder.button(text=f"{callback_data.name}", callback_data=callback_data)
 
     return builder.as_markup()

@@ -21,9 +21,8 @@ from data import get_answer
 from keyboard import Answer, answer_keyboard_markup
 
 
-# class Form(StatesGroup):
-#     name = State()
-#     like_rate = State()
+class AnswerForm(StatesGroup):
+    wanted = State()
 
 
 load_dotenv()
@@ -32,34 +31,10 @@ form_router = Router()
 pair_router = Router()
 
 
-# @form_router.message(CommandStart())
-# async def command_start(message: Message, state: FSMContext) -> None:
-#     await state.clear()
-#     await state.set_state(Form.name)
-#     await message.answer(
-#         "What is your name?",
-#         reply_markup=ReplyKeyboardRemove(),
-#     )
-
-
-# @form_router.message(Command("Cancel"))
-# @form_router.message(F.text.casefold() == "cancel")
-# async def cancel_handler(message: Message, state: FSMContext) -> None:
-#     current_state = await state.get_state()
-#     if current_state is None:
-#         return
-#     logging.info("Cancelling state %r", current_state)
-#     await state.clear()
-#     await message.answer(
-#         "Cancelled.",
-#         reply_markup=ReplyKeyboardRemove(),
-#     )
-
 
 @form_router.message(CommandStart())
 async def process_name(message: Message, state: FSMContext) -> None:
-    # await state.update_data(name=message.text)
-    # await state.set_state(Form.like_rate)
+    await state.set_state(AnswerForm.wanted)
     data = get_answer()
     markup = answer_keyboard_markup(answer_list=data)
     await message.answer(
@@ -70,12 +45,12 @@ async def process_name(message: Message, state: FSMContext) -> None:
 
 @form_router.callback_query(Answer.filter(F.name == "no"))
 async def process_dont_want(query: CallbackQuery, callback_data: Answer, state: FSMContext) -> None:
-    data = await state.get_data()
     await state.clear()
     await query.message.answer("See you later.", reply_markup=ReplyKeyboardRemove())
     
+    
 
-@form_router.callback_query(Answer.filter())
+@form_router.callback_query(Answer.filter(), AnswerForm.wanted)
 async def process_want(query: CallbackQuery, callback_data: Answer) -> None:
     await query.message.answer(
         "Click on the button of the selected currency",
@@ -83,11 +58,19 @@ async def process_want(query: CallbackQuery, callback_data: Answer) -> None:
     )
 
 
-@pair_router.callback_query(Pair.filter())
+@pair_router.callback_query(Pair.filter(), AnswerForm.wanted)
 async def pair_hanlder(callback: CallbackQuery, callback_data: Pair):
 
     await callback.message.answer(
         text=f"{get_price(str(callback_data))}",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+@form_router.callback_query(Pair.filter())
+@form_router.callback_query(Answer.filter())
+async def process_do_you_wanna(query: CallbackQuery, callback_data: Answer) -> None:
+    await query.message.answer(
+        "Please click on /start for begin the process",
         reply_markup=ReplyKeyboardRemove(),
     )
 
