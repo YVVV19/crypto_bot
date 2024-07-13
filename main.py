@@ -33,7 +33,6 @@ form_router = Router()
 pair_router = Router()
 
 
-
 @form_router.message(CommandStart())
 async def process_name(message: Message, state: FSMContext) -> None:
     logger.info(process_name.__name__)
@@ -52,7 +51,6 @@ async def process_dont_want(query: CallbackQuery, callback_data: Answer, state: 
 
     await state.clear()
     await query.message.answer("See you later.", reply_markup=ReplyKeyboardRemove())
-    
     
 
 @form_router.callback_query(Answer.filter(), AnswerForm.wanted)
@@ -73,6 +71,7 @@ async def pair_hanlder(callback: CallbackQuery, callback_data: Pair):
         text=f"{get_price(str(callback_data))}",
         reply_markup=ReplyKeyboardRemove(),
     )
+
 
 @form_router.callback_query(Pair.filter())
 @form_router.callback_query(Answer.filter())
